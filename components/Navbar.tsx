@@ -1,12 +1,15 @@
 import Link from 'next/link'
 import Image from 'next/image';
 import React from 'react'
+import { signOut } from 'next-auth/react';
 import { NavLinks } from '@/constants';
 import AuthProvider from './AuthProvider';
 import { getCurrentUser } from '@/lib/session';
+import ProfileMenu from './ProfileMenu';
 
 const Navbar = async () => {
   const session = await getCurrentUser();
+  console.log(session);
   
   return (
     <nav className='flexBetween navbar'>
@@ -33,16 +36,11 @@ const Navbar = async () => {
         {
           session?.user?.image ? (
             <>
-              <Image
-                src={session.user.image}
-                width={40}
-                height={40}
-                className='rounded-full'
-                alt={session.user.name}
-              />
-              <Link href='/create-project' >
-                Share work
-              </Link>
+            <ProfileMenu session={session} />
+            <Link href='/create-project' >
+              Share work
+            </Link>
+              
             </>
           ) : (
             <AuthProvider />
