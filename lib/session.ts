@@ -19,7 +19,7 @@ export const authOptions: NextAuthOptions = {
             const encodedToken = jsonwebtoken.sign({
                 ...token,
                 iss: 'batr',
-                exp: Math.floor(Date.now() / 1000) + 60 * 60,
+                exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30,
             }, secret);
 
             return encodedToken;
@@ -39,7 +39,7 @@ export const authOptions: NextAuthOptions = {
             const email = session?.user?.email as string;
 
             try {
-                const user = await getUser(email) as { user?: UserProfile };
+                const { user } = await getUser(email) as { user?: UserProfile };
 
                 return {
                     ...session,

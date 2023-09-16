@@ -1,9 +1,12 @@
-import { createUserMutation, getUserQuery } from "@/graphql";
+import { ProjectForm } from "@/common.types";
+import { categoryFilters } from "@/constants";
+import { createProjectMutation, createUserMutation, getUserQuery, projectsQuery } from "@/graphql";
 import { GraphQLClient } from "graphql-request";
 
 const isProduction = process.env.NODE_ENV === 'production';
 const apiUrl = isProduction ? process.env.NEXT_PUBLIC_GRAFBASE_API_URL || '' : 'http://127.0.0.1:4000/graphql';
 const apiKey = isProduction ? process.env.NEXT_PUBLIC_GRAFBASE_API_KEY || '' : 'hjvhbkjn';
+const serverUrl = isProduction ? process.env.NEXT_PUBLIC_SERVER_URL || '' : 'http://localhost:3000';
 const client = new GraphQLClient(apiUrl);
 
 const makeGraphQLRequest = async (query: string, variables = {}) => {
@@ -25,4 +28,51 @@ export const createUser = (name: string, email: string, avatarUrl: string) => {
 
     client.setHeader('x-api-key', apiKey);
     return makeGraphQLRequest(createUserMutation, variables);
+}
+
+export const fetchToken = async (): Promise<string> => {
+    const response = await fetch(`${serverUrl}/api/auth/token`);
+    const { token } = await response.json();
+
+    return token;
+}
+
+export const uploadImage = async (imagePath: string) => {
+    try {
+        const response = await fetch(`${serverUrl}/api/upload/`, {
+            method: 'POST',
+            body: JSON.stringify({ path: imagePath }),
+        });
+
+        return response.json();
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const createNewProject = async (form: ProjectForm, creatorId: string, token: string) => {
+    const image = await uploadImage(form.image);
+
+    if (image.url) {
+        client.setHeader('Authorization', `Bearer ${token}`);
+
+        const variables = {
+            input: {
+                ...form,
+                image: image.url,
+                createdBy: {
+                    link: creatorId,
+                },
+            },
+        }
+        
+        return makeGraphQLRequest(createProjectMutation, variables);
+    }
+}
+
+export const fetchAllProjects = async (category?: string, endcursor?: string) => {
+    const categories = category ? [category] : categoryFilters;
+    client.setHeader('x-api-key', apiKey);
+    
+    return await makeGraphQLRequest(projectsQuery, { categories, endcursor })
 }
