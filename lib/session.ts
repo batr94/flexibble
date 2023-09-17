@@ -76,9 +76,5 @@ export const authOptions: NextAuthOptions = {
 };
 
 export async function getCurrentUser() {
-    const userExists = await getUser('wsd@sdvsdv.sd') as { user?: UserProfile}
-    console.log('svsdvsd', userExists);
-    const session = await getServerSession(authOptions) as SessionInterface;
-
-    return session;
+    return await getServerSession(authOptions) as SessionInterface;
 }
