@@ -3,27 +3,28 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter } from 'next/navigation'; 
-import { ProjectForm, SessionInterface } from "@/common.types";
+import { ProjectForm, ProjectInterface, SessionInterface } from "@/common.types";
 import FormField from "./FormField";
 import CustomMenu from "./CustomMenu";
 import { categoryFilters } from "@/constants";
 import Button from "./Button";
-import { createNewProject, fetchToken } from "@/lib/actions";
+import { createNewProject, fetchToken, updateProject } from "@/lib/actions";
 
 type Props = {
   type: string;
   session: SessionInterface;
+  project?: ProjectInterface;
 };
 
-const ProjectForm = ({ session, type }: Props) => {
+const ProjectForm = ({ session, type, project }: Props) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState<ProjectForm>({
-    title: '',
-    description: '',
-    liveSiteUrl: '',
-    githubUrl: '',
-    image: '',
-    category: '',
+    title: project?.title || '',
+    description: project?.description || '',
+    liveSiteUrl: project?.liveSiteUrl || '',
+    githubUrl: project?.githubUrl || '',
+    image: project?.image || '',
+    category: project?.category || '',
   });
   const router = useRouter();
 
@@ -36,6 +37,11 @@ const ProjectForm = ({ session, type }: Props) => {
       const token = await fetchToken();
       if (type === 'create') {
         await createNewProject(form, session?.user?.id, token);
+        router.push('/');
+      }
+
+      if (type === 'edit') {
+        await updateProject(form, project?.id as string, token);
         router.push('/');
       }
        
