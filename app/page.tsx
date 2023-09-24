@@ -2,6 +2,7 @@ import ProjectCard from "@/components/ProjectCard";
 import { ProjectInterface } from "@/common.types";
 import { fetchAllProjects } from "@/lib/actions";
 import Categories from "@/components/Categories";
+import LoadMore from "@/components/LoadMore";
 
 type ProjectSearch = {
     projectSearch: {
@@ -16,16 +17,24 @@ type ProjectSearch = {
 }
 
 type SearchParams = {
-    category: string;
+    category?: string;
+    endcursor?: string;
+    startcursor?: string;
 }
 
 type Props = {
     searchParams: SearchParams;
 }
 
-const Home = async ({ searchParams: { category } }: Props) => {
-    const data = await fetchAllProjects(category) as ProjectSearch;
+const Home = async ({ searchParams: { category, endcursor } }: Props) => {
+    const data = await fetchAllProjects(category, endcursor) as ProjectSearch;
     const projectsToDisplay = data?.projectSearch?.edges || [];
+    const {
+        startCursor,
+        endCursor,
+        hasPreviousPage,
+        hasNextPage
+    } = data?.projectSearch?.pageInfo;
 
     if (projectsToDisplay.length === 0) {
         return (
@@ -53,9 +62,14 @@ const Home = async ({ searchParams: { category } }: Props) => {
                     />
                 ) )}
             </section>
-            <h1>Load more</h1>
+            <LoadMore
+                startCursor={startCursor}
+                endCursor={endCursor}
+                hasPreviousPage={hasPreviousPage}
+                hasNextPage={hasNextPage}
+            />
         </section>
     );
 }
-git 
+
 export default Home;
